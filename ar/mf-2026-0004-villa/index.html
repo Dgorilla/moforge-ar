@@ -65,8 +65,9 @@
         camera-controls touch-action="pan-y" autoplay animation-name="open"
         camera-orbit="-30deg 62deg auto" field-of-view="32deg" min-camera-orbit="auto auto 40%"
         interaction-prompt="none" shadow-intensity="1" exposure="1.05" environment-image="neutral">
-        <button slot="ar-button" class="ar-btn">📷 View it in your room</button>
+        <div slot="ar-button" hidden></div>
       </model-viewer>
+      <button id="arbtn" class="ar-btn" type="button">📷 View it in your room</button>
       <div class="hint" id="hint">Drag to rotate · pinch to zoom · AR places it at real size</div>
     </section>
     <section id="blueprint"><figure><a href="../../models/mf-2026-0004-villa/blueprint_01.png?v=fef418d753" target="_blank" rel="noopener"><img src="../../models/mf-2026-0004-villa/blueprint_01.png?v=fef418d753" loading="lazy" alt="Ground floor plan" /></a><figcaption>Ground floor plan · tap to zoom</figcaption></figure>
@@ -109,11 +110,36 @@
       }
       window.addEventListener("hashchange", function () { show(location.hash.slice(1)); });
       show(location.hash.slice(1));
-      mv.addEventListener("load", function () {
-        if (mv.canActivateAR === false) {
-          document.body.classList.add("no-ar");
-          mv.querySelector(".ar-btn").textContent = "Drag to rotate · AR needs a phone";
+      // Always-visible camera button. model-viewer hides its own AR button whenever it can't
+      // detect AR (WhatsApp / QR-scanner in-app browsers, desktop), so we launch it ourselves:
+      // model-viewer if it can, else Android Scene Viewer intent, else iPhone Quick Look link.
+      var ua = navigator.userAgent;
+      var android = /Android/i.test(ua);
+      var ios = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+      var hint = document.getElementById("hint");
+      document.getElementById("arbtn").addEventListener("click", function () {
+        if (mv.canActivateAR) { mv.activateAR(); return; }
+        var abs = function (a) { return new URL(mv.getAttribute(a), location.href).href; };
+        if (android) {
+          location.href = "intent://arvr.google.com/scene-viewer/1.0?file=" + encodeURIComponent(abs("src")) +
+            "&mode=ar_preferred&resizable=true&title=" + encodeURIComponent("Modern Villa · display model 1:37.5") +
+            "#Intent;scheme=https;package=com.google.android.googlequicksearchbox;action=android.intent.action.VIEW;" +
+            "S.browser_fallback_url=" + encodeURIComponent(location.href) + ";end;";
+          return;
         }
+        if (ios) {
+          var a = document.createElement("a");
+          a.rel = "ar";
+          a.href = abs("ios-src");
+          a.appendChild(document.createElement("img"));
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(function () {
+            hint.textContent = "If the camera didn't open: tap ··· and choose Open in Safari";
+          }, 1500);
+          return;
+        }
+        hint.textContent = "Open this page on your phone (scan the QR) to see it in your room";
       });
       var text = "Modern Villa · display model 1:37.5: 3D, AR and blueprint: " + page;
       document.getElementById("walink").href = "https://wa.me/?text=" + encodeURIComponent(text);
