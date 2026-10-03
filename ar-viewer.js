@@ -1,5 +1,5 @@
 /**
- * ar-viewer.js — shared AR product-preview component for MO FORGE.
+ * ar-viewer.js — shared AR product-preview component for Aksum & Co..
  * One module powers: store product pages, the QR landing route (/ar/<id>/), the
  * custom-size variant picker, and the internal design-validation tool.
  *

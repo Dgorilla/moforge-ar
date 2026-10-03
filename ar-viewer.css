@@ -1,4 +1,4 @@
-/* ar-viewer.css — shared styles for the MO FORGE AR product viewer.
+/* ar-viewer.css — shared styles for the Aksum & Co. AR product viewer.
    One stylesheet powers: store product pages, the QR landing route, the custom-size
    variant picker, and the internal design-validation tool. Keep it framework-free
    (plain CSS custom properties) so it drops into any static page with no build step. */
